@@ -1,64 +1,102 @@
-#include <iostream>
-#include <algorithm>
-using namespace std;
-class Node {
-public:
-    int data;
-    Node* left;
-    Node* right;
-    Node(int val) {
-        data = val;
-        left = nullptr;
-        right = nullptr;
-    }
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+
+struct Node {
+    int key;
+    struct Node *left, *right;
 };
-int height(Node* root) {
-    if (root == nullptr) {
-        return 0;
-    }
-    return 1 + max(height(root->left), height(root->right));
+
+// Create node
+struct Node* createNode(int key) {
+
+    struct Node *node = malloc(sizeof(struct Node));
+
+    node->key = key;
+    node->left = NULL;
+    node->right = NULL;
+
+    return node;
 }
-bool isBST(Node* root, long long minVal, long long maxVal) {
-    if (root == nullptr) {
-        return true;
-    }
-    if (root->data <= minVal || root->data >= maxVal) {
-        return false;
-    }
-    return isBST(root->left, minVal, root->data) &&
-           isBST(root->right, root->data, maxVal);
+
+// Maximum of two values
+int max(int a, int b) {
+    return (a > b) ? a : b;
 }
-bool isAVL(Node* root) {
-    if (root == nullptr) {
-        return true;
-    }
-    int bf = height(root->left) - height(root->right);
-    if (bf < -1 || bf > 1) {
-        return false;
-    }
-    return isAVL(root->left) && isAVL(root->right);
-}
-Node* createTree() {
-    int val;
-    cout << "Enter node value (-1 for no node): ";
-    cin >> val;
-    if (val == -1) {
-        return nullptr;
-    }
-    Node* root = new Node(val);
-    cout << "Left child of " << val << ":\n";
-    root->left = createTree();
-    cout << "Right child of " << val << ":\n";
-    root->right = createTree();
+
+// Insert node in BST
+struct Node* insert(struct Node* root, int key) {
+
+    if (root == NULL)
+        return createNode(key);
+
+    if (key < root->key)
+        root->left = insert(root->left, key);
+
+    else if (key > root->key)
+        root->right = insert(root->right, key);
+
     return root;
 }
+
+// Check BST property
+int checkBST(struct Node* root, long min, long maxValue) {
+
+    if (root == NULL)
+        return 1;
+
+    if (root->key <= min || root->key >= maxValue)
+        return 0;
+
+    return checkBST(root->left, min, root->key) &&
+           checkBST(root->right, root->key, maxValue);
+}
+
+// Check AVL balance and calculate height
+int checkAVL(struct Node* root) {
+
+    if (root == NULL)
+        return 0;
+
+    int lh = checkAVL(root->left);
+
+    if (lh == -1)
+        return -1;
+
+    int rh = checkAVL(root->right);
+
+    if (rh == -1)
+        return -1;
+
+    if (abs(lh - rh) > 1)
+        return -1;
+
+    return 1 + max(lh, rh);
+}
+
 int main() {
-    cout << "Create the binary tree:\n";
-    Node* root = createTree();
-    if (isBST(root, LLONG_MIN, LLONG_MAX) && isAVL(root)) {
-        cout << "The tree is an AVL tree.";
-    } else {
-        cout << "The tree is NOT an AVL tree.";
+
+    struct Node *root = NULL;
+    int n, key;
+
+    printf("Enter number of nodes: ");
+    scanf("%d", &n);
+
+    printf("Enter values:\n");
+
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &key);
+        root = insert(root, key);
     }
+
+    if (checkBST(root, LONG_MIN, LONG_MAX) &&
+        checkAVL(root) != -1)
+
+        printf("Tree is AVL Tree");
+
+    else
+        printf("Tree is NOT an AVL Tree");
+
     return 0;
 }
