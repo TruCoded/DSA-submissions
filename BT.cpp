@@ -1,204 +1,207 @@
+
 #include <iostream>
 #include <queue>
 using namespace std;
-struct Node
-{
+
+struct Node {
     int data;
-    Node* left;
-    Node* right;
+    Node *left, *right;
 };
-Node* createNode()
-{
-    Node* root = new Node;
-    root->left = NULL;
-    root->right = NULL;
-    return root;
-}
-Node* createBinaryTree()
-{
-    Node* root = createNode();
-    cout << "Enter data: ";
-    cin >> root->data;
-    int l, r;
-    cout << "Left child of " << root->data
-         << "? (1 for Yes, 0 for No): ";
-    cin >> l;
-    if (l == 1)
-        root->left = createBinaryTree();
-    else
-        root->left = NULL;
-    cout << "Right child of " << root->data
-         << "? (1 for Yes, 0 for No): ";
-    cin >> r;
-    if (r == 1)
-        root->right = createBinaryTree();
-    else
-        root->right = NULL;
-    return root;
-}
-Node* insertNode(Node* root, int value)
-{
+
+// Create a node
+Node* createNode(int value) {
     Node* temp = new Node;
     temp->data = value;
     temp->left = NULL;
     temp->right = NULL;
-    if (root == NULL)
-        return temp;
-    queue<Node*> q;
-    q.push(root);
-    while (!q.empty())
-    {
-        Node* current = q.front();
-        q.pop();
-        if (current->left == NULL)
-        {
-            current->left = temp;
-            return root;
-        }
-        else
-            q.push(current->left);
+    return temp;
+}
 
-        if (current->right == NULL)
-        {
-            current->right = temp;
-            return root;
-        }
-        else
-            q.push(current->right);
-    }
+// Create Binary Tree
+Node* createTree() {
+    int value, l, r;
+
+    cout << "Enter data: ";
+    cin >> value;
+
+    Node* root = createNode(value);
+
+    cout << "Left child of " << value << "? (1/0): ";
+    cin >> l;
+    if (l == 1)
+        root->left = createTree();
+
+    cout << "Right child of " << value << "? (1/0): ";
+    cin >> r;
+    if (r == 1)
+        root->right = createTree();
+
     return root;
 }
-Node* deleteNode(Node* root, int value)
-{
+
+// Insert using BFS
+Node* insertNode(Node* root, int value) {
+    Node* temp = createNode(value);
+
     if (root == NULL)
-    {
-        cout << "Tree is empty\n";
-        return NULL;
-    }
-    if (root->left == NULL && root->right == NULL)
-    {
-        if (root->data == value)
-        {
-            delete root;
-            return NULL;
-        }
-        cout << "Value not found\n";
-        return root;
-    }
+        return temp;
+
     queue<Node*> q;
     q.push(root);
+
+    while (!q.empty()) {
+        Node* curr = q.front();
+        q.pop();
+
+        if (curr->left == NULL) {
+            curr->left = temp;
+            return root;
+        }
+        q.push(curr->left);
+
+        if (curr->right == NULL) {
+            curr->right = temp;
+            return root;
+        }
+        q.push(curr->right);
+    }
+
+    return root;
+}
+
+// Delete using deepest rightmost node
+Node* deleteNode(Node* root, int value) {
+    if (root == NULL) {
+        cout << "Tree is empty";
+        return NULL;
+    }
+
+    queue<Node*> q;
+    q.push(root);
+
     Node* target = NULL;
     Node* last = NULL;
-    Node* parentLast = NULL;
-    while (!q.empty())
-    {
-        Node* current = q.front();
+    Node* parent = NULL;
+
+    while (!q.empty()) {
+        Node* curr = q.front();
         q.pop();
-        if (current->data == value && target == NULL)
-            target = current;
-        if (current->left != NULL)
-        {
-            parentLast = current;
-            last = current->left;
-            q.push(current->left);
+
+        if (curr->data == value && target == NULL)
+            target = curr;
+
+        if (curr->left != NULL) {
+            parent = curr;
+            last = curr->left;
+            q.push(curr->left);
         }
-        if (current->right != NULL)
-        {
-            parentLast = current;
-            last = current->right;
-            q.push(current->right);
+
+        if (curr->right != NULL) {
+            parent = curr;
+            last = curr->right;
+            q.push(curr->right);
         }
     }
-    if (target == NULL)
-    {
-        cout << "Value not found\n";
+
+    if (target == NULL) {
+        cout << "Value not found";
         return root;
     }
+
+    // Only one node
+    if (last == NULL) {
+        delete root;
+        return NULL;
+    }
+
     target->data = last->data;
-    if (parentLast->right == last)
-        parentLast->right = NULL;
+
+    if (parent->left == last)
+        parent->left = NULL;
     else
-        parentLast->left = NULL;
+        parent->right = NULL;
 
     delete last;
     return root;
 }
-void inorder(Node* root)
-{
-    if (root == NULL)
-        return;
+
+// Inorder: Left Root Right
+void inorder(Node* root) {
+    if (root == NULL) return;
+
     inorder(root->left);
     cout << root->data << " ";
     inorder(root->right);
 }
-void preorder(Node* root)
-{
-    if (root == NULL)
-        return;
+
+// Preorder: Root Left Right
+void preorder(Node* root) {
+    if (root == NULL) return;
+
     cout << root->data << " ";
     preorder(root->left);
     preorder(root->right);
 }
-void postorder(Node* root)
-{
-    if (root == NULL)
-        return;
+
+// Postorder: Left Right Root
+void postorder(Node* root) {
+    if (root == NULL) return;
+
     postorder(root->left);
     postorder(root->right);
     cout << root->data << " ";
 }
-void display(Node* root)
-{
-    if (root == NULL)
-    {
-        cout << "Tree is empty\n";
-        return;
-    }
-    cout << "\nInorder: ";
-    inorder(root);
-    cout << "\nPreorder: ";
-    preorder(root);
-    cout << "\nPostorder: ";
-    postorder(root);
-    cout << endl;
-}
-int main()
-{
+
+int main() {
     Node* root = NULL;
     int choice, value;
-    do
-    {
-        cout << "\n1. Create Binary Tree";
-        cout << "\n2. Insert Node";
-        cout << "\n3. Delete Node";
-        cout << "\n4. Display Tree";
+
+    do {
+        cout << "\n1. Create Tree";
+        cout << "\n2. Insert";
+        cout << "\n3. Delete";
+        cout << "\n4. Display";
         cout << "\n5. Exit";
         cout << "\nEnter choice: ";
         cin >> choice;
-        switch (choice)
-        {
+
+        switch (choice) {
             case 1:
-                root = createBinaryTree();
+                root = createTree();
                 break;
+
             case 2:
-                cout << "Enter value to insert: ";
+                cout << "Enter value: ";
                 cin >> value;
                 root = insertNode(root, value);
                 break;
+
             case 3:
-                cout << "Enter value to delete: ";
+                cout << "Enter value: ";
                 cin >> value;
                 root = deleteNode(root, value);
                 break;
+
             case 4:
-                display(root);
+                cout << "Inorder: ";
+                inorder(root);
+
+                cout << "\nPreorder: ";
+                preorder(root);
+
+                cout << "\nPostorder: ";
+                postorder(root);
                 break;
+
             case 5:
-                cout << "Exiting...\n";
+                cout << "Exiting...";
                 break;
+
             default:
-                cout << "Invalid choice\n";
+                cout << "Invalid choice";
         }
+
     } while (choice != 5);
+
     return 0;
 }
